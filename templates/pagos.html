@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Registro de Pagos{% endblock %}
+
+{% block content %}
+<style>
+    .form-control {
+        min-width: 250px;
+    }
+    .badge {
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    a i {
+        text-decoration: none !important;
+    }
+    a {
+        text-decoration: none !important;
+    }
+    .icon-btn {
+        border: none;
+        background: none;
+        padding: 0 4px;
+    }
+</style>
+
+<h1 class="mb-4">Registro de Pagos</h1>
+
+<!-- Filtro con radio buttons -->
+<form method="get" action="/pagos" class="row g-3 mb-4 align-items-end">
+    <div class="col-auto">
+        <label class="form-label">Filtrar por:</label><br>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="filtro_tipo" id="radioNombre" value="nombre" {% if request.args.get('filtro_tipo', 'nombre') == 'nombre' %}checked{% endif %}>
+            <label class="form-check-label" for="radioNombre">Nombre</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="filtro_tipo" id="radioId" value="id" {% if request.args.get('filtro_tipo') == 'id' %}checked{% endif %}>
+            <label class="form-check-label" for="radioId">ID</label>
+        </div>
+    </div>
+
+    <div class="col-auto">
+        <input type="text" name="valor" id="campoFiltro" class="form-control"
+               placeholder="Nombre o ID"
+               value="{{ request.args.get('valor', '') }}">
+    </div>
+
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+        <a href="/pagos" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+</form>
+
+<!-- Tabla -->
+<table class="table table-bordered align-middle text-center">
+    <thead class="table-light">
+        <tr>
+            <th>ID Proyecto</th>
+            <th>Nombre del Proyecto</th>
+            <th>Etapa</th>
+            <th>Porcentaje</th>
+            <th>Monto (B/.)</th>
+            <th>Estado</th>
+            <th>Comprobante</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in pagos %}
+        <tr>
+            <td>{{ p.IdProyecto }}</td>
+            <td>{{ p.NombreProyecto }}</td>
+            <td>{{ p.Etapa }}</td>
+            <td>{{ p.Porcentaje }}%</td>
+            <td>{{ p.Monto }}</td>
+            <td>
+                {% if p.Pagado %}
+                    <a href="/marcar_pendiente/{{ p.IdPago }}" title="Marcar como pendiente">
+                        <span class="badge bg-success">Pagado</span>
+                    </a>
+                {% else %}
+                    <a href="/marcar_pagado/{{ p.IdPago }}" title="Marcar como pagado">
+                        <span class="badge bg-danger">Pendiente</span>
+                    </a>
+                {% endif %}
+            </td>
+            <td>
+                {% if p.ComprobanteArchivo %}
+                    <a href="/uploads/{{ p.ComprobanteArchivo }}" target="_blank" class="text-info" title="Ver archivo">
+                        <i class="bi bi-eye-fill fs-5"></i>
+                    </a>
+                    <a href="/eliminar_comprobante/{{ p.IdPago }}" class="text-danger" title="Eliminar archivo" onclick="return confirm('¿Eliminar comprobante?')">
+                        <i class="bi bi-trash-fill fs-5"></i>
+                    </a>
+                {% endif %}
+                <form action="/subir_comprobante/{{ p.IdPago }}" method="post" enctype="multipart/form-data" style="display:inline;">
+                    <label for="file{{ p.IdPago }}" title="Subir archivo">
+                        <i class="bi bi-upload fs-5 text-success" style="cursor:pointer;"></i>
+                    </label>
+                    <input id="file{{ p.IdPago }}" name="archivo" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="this.form.submit()">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="/" class="btn btn-outline-secondary mt-3">← Volver al panel</a>
+
+<script>
+    const radioNombre = document.getElementById('radioNombre');
+    const radioId = document.getElementById('radioId');
+    const campoFiltro = document.getElementById('campoFiltro');
+
+    function actualizarPlaceholder() {
+        campoFiltro.placeholder = radioId.checked ? "ID del proyecto" : "Nombre del proyecto";
+        campoFiltro.type = radioId.checked ? "number" : "text";
+    }
+
+    radioNombre.addEventListener('change', actualizarPlaceholder);
+    radioId.addEventListener('change', actualizarPlaceholder);
+    window.onload = actualizarPlaceholder;
+</script>
+{% endblock %}

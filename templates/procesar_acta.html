@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Procesar Acta{% endblock %}
+{% block content %}
+<h2>Subir Acta (PDF)</h2>
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="archivo" class="form-control mb-3" accept=".pdf" required>
+    <button type="submit" class="btn btn-primary">Analizar y guardar</button>
+</form>
+
+{% if mensaje %}
+    <div class="alert alert-info mt-4">{{ mensaje }}</div>
+{% endif %}
+<a href="/" class="btn btn-outline-secondary mt-3">← Volver al inicio</a>
+{% endblock %}

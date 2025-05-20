@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<style>
+    table {
+        font-size: 14px;
+    }
+    th {
+        background-color: #f8f9fa;
+    }
+    .section-title {
+        margin-top: 20px;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
+
+<h1 class="mb-4">Lista de Proyectos</h1>
+<br>
+<div class="d-flex flex-wrap gap-3 align-items-end mb-4">
+
+    <!-- Botón subir acta -->
+    <form action="/procesar_acta" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-end">
+        <input type="file" name="archivo" id="archivo" accept=".pdf" style="display: none;" required onchange="this.form.submit()">
+        <label for="archivo" class="btn btn-primary">
+            <i class="bi bi-upload me-1"></i> Subir acta PDF
+        </label>
+    </form>
+
+    <!-- Campo eliminar por ID -->
+    <form action="/eliminar_proyecto" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.');" class="d-flex gap-2 align-items-end">
+        <input type="number" name="id_proyecto" class="form-control w-auto" placeholder="ID del proyecto" required>
+        <button type="submit" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </button>
+    </form>
+
+</div>
+
+<br>
+
+
+
+{% if mensaje %}
+    <div class="alert alert-info">{{ mensaje }}</div>
+{% endif %}
+
+<div class="accordion" id="accordionProyectos">
+    {% for p in proyectos %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{{ p.IdProyecto }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ p.IdProyecto }}" aria-expanded="false" aria-controls="collapse{{ p.IdProyecto }}">
+                {{ p.IdProyecto }} - {{ p.NombreProyecto }}
+            </button>
+        </h2>
+        <div id="collapse{{ p.IdProyecto }}" class="accordion-collapse collapse" aria-labelledby="heading{{ p.IdProyecto }}" data-bs-parent="#accordionProyectos">
+            <div class="accordion-body">
+
+                <h5 class="section-title">Datos Generales</h5>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr><th>Fecha del Acta</th><td>{{ p.FechaActa }}</td></tr>
+                        <tr><th>Fecha Firma Contrato</th><td>{{ p.FechaFirmaContrato }}</td></tr>
+                        <tr><th>Fecha Límite</th><td>{{ p.FechaLimite }}</td></tr>
+                        <tr><th>Ubicación</th><td>{{ p.Ubicacion }}</td></tr>
+                        <tr><th>Descripción General</th><td>{{ p.DescripcionGeneral }}</td></tr>
+                        <tr><th>Voltaje de Conexión</th><td>{{ p.VoltajeConexion }}</td></tr>
+                        <tr><th>Potencia Instalada</th><td>{{ p.PotenciaInstalada }} kWp</td></tr>
+                        <tr><th>Presupuesto Total</th><td>B/. {{ p.PresupuestoTotal }}</td></tr>
+                        <tr><th>Vendedor</th><td>{{ p.Vendedor }}</td></tr>
+                        <tr><th>Comisión Terceros</th><td>{{ p.ComisionTerceros }}</td></tr>
+                        <tr><th>Gerente del Proyecto</th><td>{{ p.GerenteProyecto }}</td></tr>
+                        <tr><th>Preparado Por</th><td>{{ p.PreparadoPor }}</td></tr>
+                        <tr><th>Notas</th><td>{{ p.Notas }}</td></tr>
+                    </tbody>
+                </table>
+
+                <h5 class="section-title">Contactos</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in p.Contactos %}
+                        <tr>
+                            <td>{{ c.TipoContacto }}</td>
+                            <td>{{ c.Nombre }}</td>
+                            <td>{{ c.Telefono }}</td>
+                            <td>{{ c.Correo }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h5 class="section-title">Equipos</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in p.Equipos %}
+                        <tr>
+                            <td>{{ e.TipoEquipo }}</td>
+                            <td>{{ e.Marca }}</td>
+                            <td>{{ e.Modelo }}</td>
+                            <td>{{ e.Cantidad }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h5 class="section-title">Pagos</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Etapa</th>
+                            <th>Porcentaje</th>
+                            <th>Monto (B/.)</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pago in p.Pagos %}
+                        <tr>
+                            <td>{{ pago.Etapa }}</td>
+                            <td>{{ pago.Porcentaje }}%</td>
+                            <td>{{ pago.Monto }}</td>
+                            <td>
+                                {% if pago.Pagado %}
+                                    <span class="badge bg-success">Pagado</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Pendiente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h5 class="section-title">Presupuesto Detallado</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Monto (B/.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in p.Presupuesto %}
+                        <tr>
+                            <td>{{ item.Categoria }}</td>
+                            <td>
+                                {% if item.Monto is not none %}
+                                    {{ item.Monto }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h5 class="section-title">Anexos</h5>
+                <table class="table table-bordered">
+                    <thead><tr><th>Nombre del Anexo</th></tr></thead>
+                    <tbody>
+                        {% for a in p.Anexos %}
+                        <tr><td>{{ a.NombreAnexo }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h5 class="section-title">Datos Bancarios</h5>
+                {% if p.Banco %}
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr><th>Banco</th><td>{{ p.Banco.NombreBanco }}</td></tr>
+                        <tr><th>Cuentahabiente</th><td>{{ p.Banco.Cuentahabiente }}</td></tr>
+                        <tr><th>Observaciones</th><td>{{ p.Banco.Observaciones }}</td></tr>
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No hay datos bancarios registrados.</p>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
